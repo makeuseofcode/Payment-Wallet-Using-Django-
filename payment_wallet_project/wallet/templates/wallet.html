@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>My Wallet</h1>
+        <p>User: {{ wallet.user }}</p>
+        <p>Balance: ${{ wallet.balance }}</p>
+        <div id="loading-indicator" class="d-none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p>Please wait while the deposit is being processed.</p>
+        </div>
+        <form id="deposit-form" method="post" >
+          {% csrf_token %}
+          <label for="deposit_amount">Deposit Amount:</label>
+          <input type="number" name="amount" id="deposit_amount" step="0.01" required>
+          <button type="submit" class="btn btn-success">Deposit</button>
+        </form>
+        <form method="post" id='withdraw-form' >
+        {% comment %} action="{% url 'wallet-withdraw' wallet.id %}"> {% endcomment %}
+            {% csrf_token %}
+            <label for="withdraw_amount">Withdraw Amount:</label>
+            <input type="number" name="amount" id="withdraw_amount" step="0.01" required>
+            <button type="submit" class="btn btn-danger">Withdraw</button>
+        </form>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>    
+  <script>
+    document.querySelector('#deposit-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      document.querySelector('#loading-indicator').classList.remove('d-none');
+      // Submit the form and handle the deposit logic
+      // Once the deposit is processed, hide the loading indicator and update the page
+      // You can use AJAX or fetch to handle the form submission asynchronously
+    });
+  </script>
+  
+</body>
+</html>

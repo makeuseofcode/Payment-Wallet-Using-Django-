@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wallet</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Wallets</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ wallet.user }}</td>
+                    <td id="balance">{{ wallet.balance }}</td>
+                    <td>
+                        <div id="loading-indicator" class="d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <p>Please wait while the deposit is being processed.</p>
+                        </div>
+                        <form id="deposit-form" method="post">
+                            {% csrf_token %}
+                            <input type="number" name="amount" step="0.01" min="0" required>
+                            <button type="submit" class="btn btn-success">Deposit</button>
+                        </form>
+                        <form method="post" id="withdraw-form">
+                            {% csrf_token %}
+                            <input type="number" name="amount" step="0.01" min="0" required>
+                            <button type="submit" class="btn btn-danger">Withdraw</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add your JavaScript code below -->
+    <script>
+        document.querySelector('#deposit-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            document.querySelector('#loading-indicator').classList.remove('d-none');
+            const amount = parseFloat(document.querySelector("#deposit-form input[name='amount']").value);
+            fetch("{% url 'wallet-deposit' wallet.id %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.balance !== undefined) {
+                        const newBalance = parseFloat(data.balance).toFixed(2); // Convert to number and format
+                        document.querySelector("#balance").textContent = newBalance;
+                        document.querySelector('#loading-indicator').classList.add('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.querySelector('#loading-indicator').classList.add('d-none');
+                });
+        });
+        // Add an event listener for the withdrawal form submission
+document.querySelector('#withdraw-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+    document.querySelector('#loading-indicator').classList.remove('d-none');
+    const amount = parseFloat(document.querySelector("#withdraw-form input[name='amount']").value);
+    fetch("{% url 'wallet-withdraw' wallet.id %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ amount: amount })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.balance !== undefined) { // Change to 'balance' for withdrawal
+                const newBalance = parseFloat(data.balance).toFixed(2);
+                document.querySelector("#balance").textContent = newBalance;
+                document.querySelector('#loading-indicator').classList.add('d-none');
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.querySelector('#loading-indicator').classList.add('d-none');
+        });
+});
+        // Helper function to get a cookie value by name
+
+        function getCookie(name) {
+            const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return cookieValue ? cookieValue.pop() : '';
+        }
+    </script>
+
+    <!-- Include Bootstrap JS at the end of the body -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
